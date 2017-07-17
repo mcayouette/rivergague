@@ -22,4 +22,4 @@ Simplified Water Level Description<br>
 >= 58.4 < 58.5     "Go check out Sewer Wave!"<br>
 >= 58.5 < 58.7     "Go to Sewer Wave or Champlain with Rope."<br>
 >= 58.7 > 59       "Go check out Champlain"<br>
->= 59.1:           "Champlain is HUGE!!"<br>
+>= 59.1           "Champlain is HUGE!!"<br>
