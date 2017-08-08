@@ -7,6 +7,15 @@ https://apps.twitter.com/app
 3) Setup a Cron Scheduling Job on your server
 4) Happy Tweeting
 
+Example Command line:
+python river.py --StationName=Britannia --debugMode=0
+
+Test Mode
+Make sure to set debugMode to 1 otherwise you will be tweeting!
+
+StationName
+Currently we support any Gov of Canada Water Office.  Simply modify the stationList.json, description.json
+
 <br><br>
 Data Source<br>
 Example for BRITANNIA<br>

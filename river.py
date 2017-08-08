@@ -2,12 +2,14 @@ import datetime, dateutil.parser, calendar
 import urllib, logging, csv
 import tweepy
 import json
+import argparse
 
 WATEROFFICE = "http://dd.weather.gc.ca/hydrometric/csv/ON/hourly/"
 
-def getStationCSV(stationID):
-    logging.debug("Entering getStationCSV stationID: {}".format(stationID))
-    if stationID == stationList["Britannia"]:
+def getStationCSV(stationName, stationID):
+    logging.debug("Entering getStationCSV stationName: {} stationID: {}" \
+                    .format(stationName, stationID))
+    if stationID == stationList[stationName]:
         logging.debug("Found Station: {}".format(stationID))
         url = "{}{}_hourly_hydrometric.csv".format(WATEROFFICE, stationID)
     else:
@@ -17,9 +19,10 @@ def getStationCSV(stationID):
     return url
 
 # Get the Current Water Level from the Water Office
-def getCurrWaterLevel(stationID):
-    logging.debug("Entering getCurrWaterLevel stationID: {}".format(stationID))
-    url = getStationCSV(stationID)
+def getCurrWaterLevel(stationName, stationID):
+    logging.debug("Entering getCurrWaterLevel stationName: {} stationID: {}"\
+                    .format(stationName, stationID))
+    url = getStationCSV(stationName, stationID)
     file = urllib.URLopener()
     file.retrieve(url, str("tmp.csv"))
     reader = csv.reader(open("tmp.csv"))
@@ -42,14 +45,18 @@ def getDescription(stationID, waterLevel):
     with open('description.json') as description_file:
         data = json.load(description_file)
     # Iterate through the different water level conditions
-    for entry in data[stationToQuery]:
-        logging.debug("Check Water Level Condition: {} low: {} high: {}" \
-                        " description {}".format(stationToQuery, entry['low'], \
-                        entry['high'], entry['description']))
-        if waterLevel >= entry['low'] and waterLevel < entry['high']:
-            logging.debug("Water Level Condition FOUND")
-            return entry['description']
-    logging.debug("Water Level Condition NOT FOUND return empty description")
+    try:
+        for entry in data[stationToQuery]:
+            logging.debug("Check Water Level Condition: {} low: {} high: {}" \
+                            " description {}".format(stationToQuery, entry['low'], \
+                            entry['high'], entry['description']))
+            if waterLevel >= entry['low'] and waterLevel < entry['high']:
+                logging.debug("Water Level Condition FOUND")
+                return entry['description']
+        logging.debug("Water Level Condition NOT FOUND return empty description")
+    except KeyError:
+        logging.error("KeyError while parsing the Description JSON File.")
+        pass
     return ""
 
 # Parse JSON Station List
@@ -77,12 +84,24 @@ def getApi(cfg):
     return tweepy.API(auth)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    debugMode = 1
-    stationToQuery = "Britannia"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--StationName', help='River Station Name')
+    parser.add_argument('--debugMode', help='Debug Mode 0 (off) or 1 (on)')
+    args = parser.parse_args()
+    if args.StationName is None:
+        raise Exception("Argument Station Name is missing.")
+    else:
+        stationToQuery = args.StationName
+    if args.debugMode is None or args.debugMode == 0:
+        debugMode = 0
+        logging.basicConfig(level=logging.INFO)
+    else:
+        debugMode = args.debugMode
+        logging.basicConfig(level=logging.DEBUG)
+
     stationList = getJsonStationList()
     stationID = stationList[stationToQuery]
-    (waterLevel, waterLevelDate, description) = getCurrWaterLevel(stationID)
+    (waterLevel, waterLevelDate, description) = getCurrWaterLevel(stationToQuery, stationID)
     authData = getJsonAuth()
     api = getApi(authData)
     todayDate = calendar.day_name[waterLevelDate.weekday()]
