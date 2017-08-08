@@ -19,7 +19,7 @@ Credits for documenting the different water level goes to:<br>
 http://cityofottawawhitewater.blogspot.ca/ <br>
 <br><br>
 Simplified Water Level Description<br>
->= 58.4  < 58.5   # Go check out Sewer Wave!<br>
->= 58.5  < 58.7   # Sewer Wave or Champlain with Rope<br>
->= 58.7  < 59     # Champlain with Effort<br>
->= 59.1           # Go check out Champlain!<br>
+>= 58.4 < 58.5     "Go check out Sewer Wave!"<br>
+>= 58.5 < 58.7     "Go to Sewer Wave or Champlain with Rope."<br>
+>= 58.7 > 59       "Go check out Champlain"<br>
+>= 59.1           "Champlain is HUGE!!"<br>
