@@ -1,4 +1,12 @@
 The goal of this project is to pull the River Gauge Data from wateroffice.ec.gc.ca and tweet the water level <br>
+
+1) You will need to create a Twitter Account and get Application Tokens
+https://apps.twitter.com/app
+2) Insert the generated keys in auth.json
+3) Modify the stationList to include the River Gauge you are interested in
+3) Setup a Cron Scheduling Job on your server
+4) Happy Tweeting
+
 <br><br>
 Data Source<br>
 Example for BRITANNIA<br>
