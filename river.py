@@ -6,48 +6,50 @@ import json
 WATEROFFICE = "http://dd.weather.gc.ca/hydrometric/csv/ON/hourly/"
 
 def getStationCSV(stationID):
-    logging.debug("Entering getStationCSV stationID: " + stationID)
+    logging.debug("Entering getStationCSV stationID: {}".format(stationID))
     if stationID == stationList["Britannia"]:
-        logging.debug("Found Station:" + stationID)
-        url = WATEROFFICE + stationID + "_hourly_hydrometric.csv"
+        logging.debug("Found Station: {}".format(stationID))
+        url = "{}{}_hourly_hydrometric.csv".format(WATEROFFICE, stationID)
     else:
-        logging.error("Station NOT Found " + stationID)
+        logging.error("Station NOT Found {}".format(stationID))
         raise Exception("Not Implemented")
-    logging.debug("URL for " + stationID + ": " + url)
+    logging.debug("URL for {}: {}".format(stationID, url))
     return url
 
 # Get the Current Water Level from the Water Office
 def getCurrWaterLevel(stationID):
-    logging.debug("Entering getCurrWaterLevel stationID: " + stationID)
+    logging.debug("Entering getCurrWaterLevel stationID: {}".format(stationID))
     url = getStationCSV(stationID)
     file = urllib.URLopener()
     file.retrieve(url, str("tmp.csv"))
     reader = csv.reader(open("tmp.csv"))
     # Get the last entry of the CSV to get the latest water level
     for row in reader:
-        logging.debug("CSV " + str(row))
+        logging.debug("CSV {}".format(row))
         waterLevel = row[2]
         waterLevelDateString = row[1]
     waterLevelDate = dateutil.parser.parse(waterLevelDateString)
-    logging.info("Water Level is equal to: " +  waterLevel + " on the " \
-                 + str(waterLevelDate.day))
+    logging.info("Water Level is equal to: {} on the {}" \
+                    .format(waterLevel, waterLevelDate.day))
     description = getDescription(stationID, float(waterLevel))
     return waterLevel, waterLevelDate, description
 
 # Should I go Paddle?
 def getDescription(stationID, waterLevel):
-    logging.debug("Entering getDescription stationID: " + stationID \
-                    + " waterlevel: " + str(waterLevel))
-    if stationID == stationList["Britannia"]:
-        if waterLevel >= 58.4 and waterLevel < 58.5:
-            return "Go check out Sewer Wave!\n"
-        elif waterLevel >= 58.5 and waterLevel < 58.7:
-            return "Go to Sewer Wave or low water Champlain and " \
-                    "may require some rope.\n"
-        elif waterLevel >= 58.7 and waterLevel > 59:
-            return "Go check out Champlain\n"
-        elif waterLevel >= 59.1:
-            return "Champlain is HUGE!!\n"
+    logging.debug("Entering getDescription stationID: {} waterlevel: {}" \
+                    .format(stationID, waterLevel))
+    # Parse Water Level JSON Data
+    with open('description.json') as description_file:
+        data = json.load(description_file)
+    # Iterate through the different water level conditions
+    for entry in data[stationToQuery]:
+        logging.debug("Check Water Level Condition: {} low: {} high: {}" \
+                        " description {}".format(stationToQuery, entry['low'], \
+                        entry['high'], entry['description']))
+        if waterLevel >= entry['low'] and waterLevel < entry['high']:
+            logging.debug("Water Level Condition FOUND")
+            return entry['description']
+    logging.debug("Water Level Condition NOT FOUND return empty description")
     return ""
 
 # Parse JSON Station List
@@ -55,7 +57,7 @@ def getJsonStationList():
     logging.debug("Entering getJsonStationList")
     with open('stationList.json') as station_file:
         data = json.load(station_file)
-    logging.debug("Station List: " + str(data))
+    logging.debug("Station List: {}".format(data))
     return data
 
 # Parse Json Authentication File
@@ -63,12 +65,13 @@ def getJsonAuth():
     logging.debug("Entering getJsonAuth")
     with open('auth.json') as auth_file:
         data = json.load(auth_file)
-    logging.debug("Crendentials: " + str(data))
+    logging.debug("Crendentials: {}".format(data))
     return data
 
 # Authenticate
 def getApi(cfg):
-    logging.debug("Entering getApi with the following auth config: " + str(cfg))
+    logging.debug("Entering getApi with the following auth config: " \
+                    "{}".format(cfg))
     auth = tweepy.OAuthHandler(cfg['consumer_key'], cfg['consumer_secret'])
     auth.set_access_token(cfg['access_token'], cfg['access_token_secret'])
     return tweepy.API(auth)
@@ -78,12 +81,13 @@ if __name__ == '__main__':
     debugMode = 1
     stationToQuery = "Britannia"
     stationList = getJsonStationList()
-    (waterLevel, waterLevelDate, description) = getCurrWaterLevel(stationList[stationToQuery])
+    stationID = stationList[stationToQuery]
+    (waterLevel, waterLevelDate, description) = getCurrWaterLevel(stationID)
     authData = getJsonAuth()
     api = getApi(authData)
-    tweet = description + "Water Level at " + stationToQuery \
-            + " on " + calendar.day_name[waterLevelDate.weekday()] \
-            + " is now at " + str(waterLevel)
+    todayDate = calendar.day_name[waterLevelDate.weekday()]
+    tweet = description + "Water Level at {} on {} is now at {}" \
+            .format(stationToQuery, todayDate, waterLevel)
     # Send Out the Tweet!
     if debugMode == 0:
         logging.info("Live mode... post the tweet")
@@ -91,5 +95,5 @@ if __name__ == '__main__':
     else:
         logging.info("Test mode... not posting.")
         status = "Test Mode DID NOT POST"
-    logging.info("Tweet: " + tweet)
-    logging.info("Twitter Reponse Status: " + str(status))
+    logging.info("Tweet: {}".format(tweet))
+    logging.info("Twitter Reponse Status: {}".format(status))

@@ -1,0 +1,29 @@
+{
+  "Britannia": [
+   {
+      "low": 0,
+      "high": 58.4,
+      "description": ""
+    },
+   {
+      "low": 58.4,
+      "high": 58.5,
+      "description": "Go check out Sewer Wave!"
+    },
+   {
+      "low": 58.5,
+      "high": 58.7,
+      "description": "Go to Sewer Wave or low water Champlain and may require some rope"
+    },
+    {
+      "low": 58.7,
+      "high": 59,
+      "description": "Go check out Champlain"
+    },
+    {
+      "low": 59.1,
+      "high": 100,
+      "description": "Champlain is HUGE!!"
+    }
+  ]
+}
