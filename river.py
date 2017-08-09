@@ -1,7 +1,7 @@
 import datetime, dateutil.parser, calendar
 import urllib, logging, csv
 import tweepy
-import json
+import ujson
 import argparse
 
 WATEROFFICE = "http://dd.weather.gc.ca/hydrometric/csv/ON/hourly/"
@@ -43,7 +43,7 @@ def getDescription(stationID, waterLevel):
                     .format(stationID, waterLevel))
     # Parse Water Level JSON Data
     with open('description.json') as description_file:
-        data = json.load(description_file)
+        data = ujson.load(description_file)
     # Iterate through the different water level conditions
     try:
         for entry in data[stationToQuery]:
@@ -63,7 +63,7 @@ def getDescription(stationID, waterLevel):
 def getJsonStationList():
     logging.debug("Entering getJsonStationList")
     with open('stationList.json') as station_file:
-        data = json.load(station_file)
+        data = ujson.load(station_file)
     logging.debug("Station List: {}".format(data))
     return data
 
@@ -71,7 +71,7 @@ def getJsonStationList():
 def getJsonAuth():
     logging.debug("Entering getJsonAuth")
     with open('auth.json') as auth_file:
-        data = json.load(auth_file)
+        data = ujson.load(auth_file)
     logging.debug("Crendentials: {}".format(data))
     return data
 
